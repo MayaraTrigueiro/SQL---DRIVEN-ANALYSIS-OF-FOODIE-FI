@@ -5,7 +5,7 @@
 SELECT count(distinct(customer_id)) qnt_clientes
 FROM civil-medley-321018.datamarts.subscriptions
 
-![Texto alternativo](caminho/para/sua/imagem/Q1-C.jpeg)
+![Texto alternativo](SQL---DRIVEN-ANALYSIS-OF-FOODIE-FI/Q1-C.jpeg)
 
 Explicação: Utilização das funções COUNT e DISTINCT para obter a quantidade total de assinantes únicos.
 
