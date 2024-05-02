@@ -1,0 +1,20 @@
+# QUESTÕES ANALÍTICAS
+
+1. Quantos assinantes a Foodie-Fi já teve desde sua fundação?
+
+SELECT count(distinct(customer_id)) qnt_clientes
+FROM civil-medley-321018.datamarts.subscriptions
+
+Explicação: Utilização das funções COUNT e DISTINCT para obter a quantidade total de assinantes únicos.
+
+2. Qual a distribuição e quantidade de novos planos triais do dataset por mês? 
+
+SELECT count(plan_id) QNT_TRIAL,
+date_trunc(_start_date, month) MES
+from civil-medley-321018.datamarts.subscriptions
+where plan_id = 0
+group by 2
+
+Explicação: Nesta query foi utilizada a função agregadora COUNT e a função date_trunc (para extrair apenas o mês do _start_date de cada assinante) para saber a quantidade de plano trial 
+por mês. Ao agrupar a quantidade de novos clientes com o plano trial por mês, chegamos no seguinte resultado: 
+
