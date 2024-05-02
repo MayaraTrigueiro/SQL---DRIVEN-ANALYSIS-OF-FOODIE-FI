@@ -1,25 +1,31 @@
-# SQL - DRIVEN ANALYSIS OF FOODIE FI’S SUBSCRIPTION DYNAMICS
+# SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
 
 **Introdução**
 
-Analise de dados de uma empresa chamada Foodie-Fi que oferece serviços streaming de conteúdo de comida (Como se fosse uma Netflix, mas apenas com programas e conteúdos de comidas e cozinha). 
-A empresa foi fundada em 2020 e iremos utilizar os dados disponíveis para analisar aceitação do serviço entre os assinantes, quais planos mais foram contratados e como foi a movimentação dos planos entre os clientes, churn, downgrades e upgrades entre os clientes, entre outros questionamentos que possa nos dar uma perspectiva do passado e presente e nos ajude a entender se ela esta no caminho certo e/ou quais recomendações podemos dar para fazer com que a empresa siga prosperando.
+Análise de dados de uma empresa chamada Foodie-Fi que oferece serviços streaming de conteúdo de comida (Como se fosse uma Netflix, mas apenas com programas e conteúdos de comidas e cozinha). 
+A empresa foi fundada em 2020 e iremos utilizar os dados disponíveis para analisar aceitação do serviço entre os assinantes, quais foram os planos mais contratados, como foi a movimentação dos planos entre os clientes (churn, downgrades e upgrades), entre outros questionamentos que possa nos dar uma perspectiva do passado e presente visando decisões e recomendações mais assertivas para a empresa.
 
 **Dados disponíveis**
 
 Duas tabelas: Planos e Assinaturas com dados de 01/01/2020 até 30/04/2021
 
-*Tabela 1: Planos* 
+* *Tabela 1: Planos* 
 
 civil-medley-321018.datamarts.plans
 
 Tabela mostra código, nome do plano e valor mensal do plano 
-- Clientes podem iniciar sua experiencia com 7 dias de acesso gratis.
-- Plano Basico: 9.99 - Clientes possuem acesso limitado ao conteúdo
-- Plano Pro (mensal ou anual): 19.90 e 199
-- Quando clientes cancelam a assinatura do Foodie-Fi, eles migram para o plano Churn com o preço 0.
 
-*Tabela 2: Assinaturas*
+-> Plano 0: Clientes podem iniciar sua experiencia com 7 dias de acesso gratis.
+
+-> Plano 1: Plano Basico: 9.99 - Clientes possuem acesso limitado ao conteúdo
+
+-> Plano 2: Plano Pro Mensal: 19.90
+
+-> Plano 3:Plano Pro Anual: 199
+
+-> Plano 4 Quando clientes cancelam a assinatura do Foodie-Fi, eles migram para o plano Churn com o preço 0.
+
+* *Tabela 2: Assinaturas*
 
 civil-medley-321018.datamarts.subscriptions
 
