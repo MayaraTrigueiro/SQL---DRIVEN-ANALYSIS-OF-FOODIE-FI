@@ -16,5 +16,234 @@ where plan_id = 0
 group by 2
 
 Explicação: Nesta query foi utilizada a função agregadora COUNT e a função date_trunc (para extrair apenas o mês do _start_date de cada assinante) para saber a quantidade de plano trial 
-por mês. Ao agrupar a quantidade de novos clientes com o plano trial por mês, chegamos no seguinte resultado: 
+por mês. Ao agrupar a quantidade de novos clientes com o plano trial por mês, conseguimos chegar no resultado.
+
+3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
+
+WITH NOVOS_PLANOS AS (
+  SELECT s.plan_id,
+
+  plan_name,
+  _start_date,
+  price
+  from civil-medley-321018.datamarts.subscriptions s
+  left join civil-medley-321018.datamarts.plans p
+  on p.plan_id = s.plan_id
+  where _start_date >= '2021-01-01'
+)
+select 
+plan_name,
+price,
+count(plan_name) total_events_plan
+from novos_planos
+group by 1,2
+
+Explicação: Utilizando o conceito de TABELA TEMPORÁRIA, criei uma tabela fazendo um LEFT JOIN com as duas tabelas (subscriptions e plans)
+chamada NOVOS_PLANOS afim de trazer o ID do plano (plan_id), nome do plano (plan_name), data de início (_start_date) e preço (price),
+filtrando apenas por dados a partir de 01/01/2021. A partir dessa tabela, realizei uma contagem utilizando o conceito da função 
+agregadora (COUNT) de todos os eventos dos planos validos, chegamos no resultado.
+
+4. Qual a contagem e porcentagem dos assinantes que cancelaram o serviço?
+
+SELECT 
+count(distinct(customer_id)) total_customers,
+SUM(CASE WHEN PLAN_ID = 4 THEN 1.0 ELSE 0 END) TOTAL_CHURN,
+ROUND(SUM(CASE WHEN PLAN_ID = 4 THEN 1.0 ELSE 0 END) / COUNT(DISTINCT(CUSTOMER_ID))*100,1) PCT_CHURN
+FROM civil-medley-321018.datamarts.subscriptions
+
+Explicação: Com o intuito de trazer um valor/resultado quando uma condição é verdadeira, utilizei a expressão CASE WHEN juntamente com a 
+função agregadora SUM para descobrir o total de clientes que cancelaram o serviço (TOTAL_CHURN) e dividindo esse resultado pelo total de 
+clientes da empresa afim de obter a porcentagem de cancelamento em relação ao total, chegamos no resultado.
+
+5. Quantos clientes cancelaram o serviço logo após os 7 dias de acesso gratis? Qual a porcentagem arredondada para um numero inteiro?
+
+WITH end_dates as (
+  select customer_id,
+  date_add(min(_start_date), INTERVAL 7 day) _end_date
+  from civil-medley-321018.datamarts.subscriptions
+  group by 1
+  having date_add(min(_start_date), INTERVAL 7 day) <= '2021-01-07'
+ )
+ ,qnt_customers_churn_after_trial as (
+  select count(e.customer_id) qnt_customers
+  from end_dates e
+  left join civil-medley-321018.datamarts.subscriptions s
+  on s.customer_id = e.customer_id
+  where plan_id = 4
+  and s._start_date = e._end_date
+),
+total_churn as (
+SELECT 
+count(distinct customer_id) qtd_total_churn,
+FROM civil-medley-321018.datamarts.subscriptions
+)
+select 
+c.qnt_customers churn_after_trial,
+round(c.qnt_customers / (select qtd_total_churn from total_churn), 1)*100 pct_churn_after_trial
+from qnt_customers_churn_after_trial c
+
+Explicação: Utilizando o conceito de TABELA TEMPORÁRIA, criei três tabelas temporárias chamadas “end_dates”, “qnt_customers_churn_after_trial” 
+e “total_churn”. 
+* A primeira tabela “end_dates” utiliza a função DATE_ADD e a função agregadora MIN para adicionar 7 dias a primeira data registrada pelo cliente,
+ou seja, a data de inicio do trial, descobrindo então a data final do acesso gratuito (_end_date).
+* A segunda tabela “qnt_customers_churn_after_trial” faz um LEFT JOIN da primeira tabela temporária (end_date) com a tabela principal
+(subscriptions) utilizando a função agregadora COUNT para identificar a quantidade de assinantes (qnt_customers) que estejam no plano 4 (churn)
+e que tenham a _start_date (plano 4 - churn) = _end_date (plano 0 - trial), ou seja, aqueles clientes que iniciaram o churn/cancelamento logo
+após o trial.
+* Terceira tabela temporária utiliza a função COUNT e DISTINCT para obter a quantidade total de assinantes (qtd_total_churn)
+Como os dados necessários para calcular a porcentagem esta em duas tabelas diferentes (qnt_customers_churn_after_trial e total_churn),
+utilizei a tática de SUBQUERY para obter os dois resultado em uma única query que traz e faz a divisão entre a quantidade de assinantes que 
+cancelaram após o trial (qnt_customers) e o total de clientes (qtd_total_churn), chegando no resultado.
+
+6. Qual a quantidade e porcentagem de assinantes por plano após o trial?
+
+with inicio_pos_trial as (
+  select customer_id,
+  min(_start_date) dt_inicio_pos_trial
+  from civil-medley-321018.datamarts.subscriptions
+  where plan_id <> 0 
+  group by 1
+),
+ churn as ( 
+select ss.customer_id,
+from civil-medley-321018.datamarts.subscriptions ss
+inner join inicio_pos_trial ip on ip.customer_id = ss.customer_id 
+where plan_id =4 
+),
+plans as (
+select 
+s.customer_id,
+s.plan_id,
+s._start_date
+from civil-medley-321018.datamarts.subscriptions s
+left join inicio_pos_trial i
+on i.customer_id = s.customer_id
+where s._start_date = i.dt_inicio_pos_trial 
+), 
+qnt_plans as (
+select plan_id,
+count(plan_id) qnt_plans,
+from plans
+group by 1
+)
+select 
+plan_id, 
+q.qnt_plans quantidade,
+q.qnt_plans/(select count(distinct customer_id) from civil-medley-321018.datamarts.subscriptions)*100 `% planos`
+from qnt_plans q
+group by 1,2
+
+Explicação: Com o mesmo raciocínio da questão anterior, utilizei o conceito de TABELA TEMPORÁRIA para criação de 4 tabelas temporárias utilizando
+funções agregadoras (MIN, COUNT e SUM), JOINS (INNER JOIN e LEFT JOIN), GROUP BY, SUBQUERY, entre outras funções afim de obter os seguintes 
+resultados:
+* Primeira tabela temporária chamada “inicio_pos_trial” usa a função agregadora MIN combinado com o filtro (WHERE) plan_id <> 0 para 
+identificar a data inicio de cada assinante após o período gratuito 
+* Segunda tabela temporária chamada “churn” faz um INNER JOIN com a tabela “inicio_pos_trial”, combinando registros das duas tabelas para 
+identificar quais clientes tiveram churn
+* Já a terceira tabela temporária “plans” utiliza o LEFT JOIN para mostrar qual o plano do cliente quando a data de inicio (_start_date) 
+é igual a data de inicio após o trial (dt_inicio_pos_trial)
+* Quarta e última tabela temporária utiliza a função agregadora COUNT para saber o total que cada plano (plan_id) possui.
+Para chegar no resultado da tabela abaixo selecionamos o código do plano (plan_id), a quantidade total de cada plano (qnt_plans) 
+e dividimos o total de cada plano (qnt_plans) pelo total de assinantes da empresa (Fazendo uma subquery para acessar um dado de outra tabela)
+para descobrir sua %.
+
+8. Quantos assinantes fizeram upgrade para o plano anual em 2020?
+
+SELECT count(customer_id) total_annual_customers
+from civil-medley-321018.datamarts.subscriptions
+where plan_id = 3 
+and _start_date <= '2020-12-31'
+
+Explicação: Após realizar a contagem dos assinantes com a função agregadora COUNT, filtramos, através da clausula WHERE
+e com operadores = (igual)/ <= (menor ou igual), aqueles que tem ou tiveram o plano 3 (pro annual) até 31/12/2020
+
+9. Qual a média de dias que leva um cliente assinar o PRO ANNUAL desde o dia do cadastro na Foodie-Fi?
+
+WITH start_date as (
+  select customer_id,
+  min(_start_date) start_trial_date
+  from civil-medley-321018.datamarts.subscriptions
+  group by 1
+),
+annual_plan_date as (
+  select customer_id,
+  plan_id,
+  _start_date
+  from civil-medley-321018.datamarts.subscriptions
+  where plan_id = 3
+)
+select round(avg(date_diff(a._start_date, s.start_trial_date, day))) media_dias
+from start_date s
+left join annual_plan_date a
+on a.customer_id = s.customer_id
+
+Explicação:
+
+10.  Analise a média detalhada de upgrade em períodos de 30 dias (Ex.: 0-30 dias, 31-60 dias etc)
+
+WITH start_date as (
+  select customer_id,
+  min(_start_date) start_trial_date
+  from civil-medley-321018.datamarts.subscriptions
+  group by 1
+),
+annual_plan_date as (
+  select customer_id,
+  plan_id,
+  _start_date
+  from civil-medley-321018.datamarts.subscriptions
+  where plan_id = 3
+),
+diferenca_dias as (
+  select a.customer_id,
+  date_diff(a._start_date, sa.start_trial_date, day) dif_dias_customer
+  from annual_plan_date a
+  left join start_date sa
+  on sa.customer_id = a.customer_id 
+)
+select 
+count(customer_id) total_customers,
+case
+when dif_dias_customer <= 30 then 'a. 0 a 30 dias para upgrade'
+when dif_dias_customer >= 31 and dif_dias_customer <= 60 then 'b. 31 a 60 dias para upgrade'
+when dif_dias_customer >= 61 and dif_dias_customer <= 90 then 'c. 61 a 90 dias para upgrade'
+when dif_dias_customer >= 91 and dif_dias_customer <= 120 then 'd. 91 a 120 dias para upgrade'
+when dif_dias_customer >= 121 and dif_dias_customer <= 150 then 'e. 121 a 150 dias para upgrade'
+when dif_dias_customer >= 151 and dif_dias_customer <= 180 then 'f. 151 a 180 dias para upgrade'
+when dif_dias_customer >= 181 and dif_dias_customer <= 210 then 'g. 181 a 210 dias para upgrade'
+when dif_dias_customer >= 211 and dif_dias_customer <= 240 then 'h. 211 a 240 dias para upgrade'
+when dif_dias_customer >= 241 and dif_dias_customer <= 270 then 'i. 241 a 270 dias para upgrade'
+when dif_dias_customer >= 271 and dif_dias_customer <= 300 then 'j. 271 a 300 dias para upgrade'
+when dif_dias_customer >= 301 and dif_dias_customer <= 330 then 'k. 301 a 330 dias para upgrade'
+when dif_dias_customer >= 331 and dif_dias_customer <= 360 then 'l. 331 a 360 dias para upgrade'
+end avg_days_to_upgrade
+from diferenca_dias
+group by 2
+order by avg_days_to_upgrade
+
+Explicação: 
+
+11.  Quantos assinantes fizeram downgrade do plano Pro Monthly para o Basic Monthly em 2020?
+
+with customers_pro_monthly as (
+  select *
+from civil-medley-321018.datamarts.subscriptions
+where plan_id = 2
+),
+customers_basic_monthly as (
+  select *
+  from civil-medley-321018.datamarts.subscriptions
+  where plan_id = 1
+)
+  select count(pm.customer_id) total_downgraded_customers
+  from customers_pro_monthly pm
+  inner join customers_basic_monthly bm
+  on bm.customer_id = pm.customer_id
+  where bm._start_date > pm._start_date
+
+Explicação: 
+
+
+
+
 
