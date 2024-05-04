@@ -1,6 +1,6 @@
 # SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
 
-LINK PARA ANALISE COMPLETA: https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
+LINK PARA ANÁLISE COMPLETA: https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
 
 **Introdução**
 
