@@ -1,5 +1,7 @@
 # SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
 
+LINK PARA ANALISE COMPLETA: https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
+
 **Introdução**
 
 Análise de dados de uma empresa chamada Foodie-Fi que oferece serviços streaming de conteúdo de comida (Como se fosse uma Netflix, mas apenas com programas e conteúdos de comidas e cozinha). 
