@@ -1,11 +1,9 @@
-# QUESTÕES ANALÍTICAS
+#QUESTÕES ANALÍTICAS
 
-1. Quantos assinantes a Foodie-Fi já teve desde sua fundação?
+**1. Quantos assinantes a Foodie-Fi já teve desde sua fundação?**
 
 SELECT count(distinct(customer_id)) qnt_clientes
 FROM civil-medley-321018.datamarts.subscriptions
-
-![Texto alternativo](SQL---DRIVEN-ANALYSIS-OF-FOODIE-FI/Q1-C.jpeg)
 
 Explicação: Utilização das funções COUNT e DISTINCT para obter a quantidade total de assinantes únicos.
 
