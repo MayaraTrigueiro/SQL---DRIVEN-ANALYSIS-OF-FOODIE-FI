@@ -1,10 +1,10 @@
 # SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
 
 LINK PARA GOOGLE CONSOLE - BIGQUERY - PERGUNTAS E RESPOSTAS (SQL):
-https://console.cloud.google.com/bigquery?sq=203346039404:ae4749ef417e454e8ff4a745f5698d65
+- https://console.cloud.google.com/bigquery?sq=203346039404:ae4749ef417e454e8ff4a745f5698d65
 
 LINK PARA ANÁLISE COMPLETA: 
-https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
+- https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
 
 **Introdução**
 
