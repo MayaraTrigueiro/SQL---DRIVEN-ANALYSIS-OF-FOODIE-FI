@@ -1,6 +1,6 @@
-#QUESTÕES ANALÍTICAS
+# QUESTÕES ANALÍTICAS (CÓDIGO SQL + QUERY EXPLICADA)
 
-**1. Quantos assinantes a Foodie-Fi já teve desde sua fundação?**
+1. Quantos assinantes a Foodie-Fi já teve desde sua fundação?
 
 SELECT count(distinct(customer_id)) qnt_clientes
 FROM civil-medley-321018.datamarts.subscriptions
@@ -23,7 +23,6 @@ por mês. Ao agrupar a quantidade de novos clientes com o plano trial por mês, 
 
 WITH NOVOS_PLANOS AS (
   SELECT s.plan_id,
-
   plan_name,
   _start_date,
   price
@@ -54,7 +53,7 @@ FROM civil-medley-321018.datamarts.subscriptions
 
 Explicação: Com o intuito de trazer um valor/resultado quando uma condição é verdadeira, utilizei a expressão CASE WHEN juntamente com a 
 função agregadora SUM para descobrir o total de clientes que cancelaram o serviço (TOTAL_CHURN) e dividindo esse resultado pelo total de 
-clientes da empresa afim de obter a porcentagem de cancelamento em relação ao total, chegamos no resultado.
+clientes da empresa afim de obter a porcentagem de cancelamento em relação ao total.
 
 5. Quantos clientes cancelaram o serviço logo após os 7 dias de acesso gratis? Qual a porcentagem arredondada para um numero inteiro?
 
@@ -64,8 +63,8 @@ WITH end_dates as (
   from civil-medley-321018.datamarts.subscriptions
   group by 1
   having date_add(min(_start_date), INTERVAL 7 day) <= '2021-01-07'
- )
- ,qnt_customers_churn_after_trial as (
+ ),
+  qnt_customers_churn_after_trial as (
   select count(e.customer_id) qnt_customers
   from end_dates e
   left join civil-medley-321018.datamarts.subscriptions s
@@ -105,12 +104,6 @@ with inicio_pos_trial as (
   where plan_id <> 0 
   group by 1
 ),
- churn as ( 
-select ss.customer_id,
-from civil-medley-321018.datamarts.subscriptions ss
-inner join inicio_pos_trial ip on ip.customer_id = ss.customer_id 
-where plan_id =4 
-),
 plans as (
 select 
 s.customer_id,
@@ -129,24 +122,59 @@ group by 1
 )
 select 
 plan_id, 
-q.qnt_plans quantidade,
-q.qnt_plans/(select count(distinct customer_id) from civil-medley-321018.datamarts.subscriptions)*100 `% planos`
+sum(q.qnt_plans) quantidade,
+round(sum(q.qnt_plans)/(select count(distinct customer_id) from civil-medley-321018.datamarts.subscriptions),2)*100 `% planos`
 from qnt_plans q
+group by 1
+
+Explicação: Com o mesmo raciocínio da questão anterior, utilizei o conceito de TABELA TEMPORÁRIA para criação de 3 tabelas temporárias utilizando
+funções agregadoras (MIN, COUNT e SUM), JOINS (INNER JOIN e LEFT JOIN), GROUP BY, SUBQUERY, entre outras funções afim de obter os seguintes
+resultados:
+* Primeira tabela temporária chamada “inicio_pos_trial” usa a função agregadora MIN combinada com o filtro (WHERE) plan_id <> 0 para identificar
+a data início de cada assinante após o período gratuito
+* A segunda tabela temporária “plans” utiliza o LEFT JOIN para mostrar qual o plano do cliente quando a data de inicio (_start_date) é igual a
+data de inicio após o trial (dt_inicio_pos_trial)
+* Já a terceira utiliza a função agregadora COUNT para saber o total que cada plano (plan_id) possui.
+Para chegar no resultado da tabela abaixo, selecionamos o código do plano (plan_id), a quantidade total de cada plano (qnt_plans) e dividimos
+o total de cada plano (qnt_plans) pelo total de assinantes da empresa (fazendo uma subquery para acessar um dado de outra tabela) para descobrir
+sua %
+
+7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+
+with dt_ultimo_plano as (
+  select customer_id,
+max(_start_date) dt_ultimo_plano,
+from civil-medley-321018.datamarts.subscriptions
+where _start_date <= '2020-12-31'
+group by 1
+),
+planos as (
+  select p.customer_id,
+  dt_ultimo_plano,
+  plan_id
+  from dt_ultimo_plano p
+  left join civil-medley-321018.datamarts.subscriptions s
+  on s.customer_id = p.customer_id
+  where dt_ultimo_plano = _start_date
+),
+detalhamento_planos as (
+  select plan_id,
+count(plan_id) qnt_planos
+from planos
+group by 1
+)
+select 
+plan_id,
+qnt_planos,
+round(sum(qnt_planos)/(select count(distinct customer_id) from civil-medley-321018.datamarts.subscriptions),2)*100 `% planos`
+from detalhamento_planos
 group by 1,2
 
-Explicação: Com o mesmo raciocínio da questão anterior, utilizei o conceito de TABELA TEMPORÁRIA para criação de 4 tabelas temporárias utilizando
-funções agregadoras (MIN, COUNT e SUM), JOINS (INNER JOIN e LEFT JOIN), GROUP BY, SUBQUERY, entre outras funções afim de obter os seguintes 
-resultados:
-* Primeira tabela temporária chamada “inicio_pos_trial” usa a função agregadora MIN combinado com o filtro (WHERE) plan_id <> 0 para 
-identificar a data inicio de cada assinante após o período gratuito 
-* Segunda tabela temporária chamada “churn” faz um INNER JOIN com a tabela “inicio_pos_trial”, combinando registros das duas tabelas para 
-identificar quais clientes tiveram churn
-* Já a terceira tabela temporária “plans” utiliza o LEFT JOIN para mostrar qual o plano do cliente quando a data de inicio (_start_date) 
-é igual a data de inicio após o trial (dt_inicio_pos_trial)
-* Quarta e última tabela temporária utiliza a função agregadora COUNT para saber o total que cada plano (plan_id) possui.
-Para chegar no resultado da tabela abaixo selecionamos o código do plano (plan_id), a quantidade total de cada plano (qnt_plans) 
-e dividimos o total de cada plano (qnt_plans) pelo total de assinantes da empresa (Fazendo uma subquery para acessar um dado de outra tabela)
-para descobrir sua %.
+Explicaçāo: Com o auxílio de tabelas temporárias, conseguimos identificar na tabela “dt_ultimo_plano” a última data início (utilizando a
+função agregadora MAX) de cada cliente até o dia 31/12/2020. Tendo essa informação, conseguimos identificar, fazendo um left join com a tabela
+‘subscription’, qual plano está vinculado a essa data.
+Sabendo o plano, a data inicio e o cliente, realizei um COUNT do plan_id para saber quantas assinaturas ativas cada plano tinha e uma SUBQUERY
+para calcular a porcentagem que cada plano representa sobre o total de clientes.
 
 8. Quantos assinantes fizeram upgrade para o plano anual em 2020?
 
@@ -178,7 +206,11 @@ from start_date s
 left join annual_plan_date a
 on a.customer_id = s.customer_id
 
-Explicação:
+Explicação: Utilizando o conceito de TABELA TEMPORÁRIA, criei duas tabelas temporárias para obter a data inicial do trial de cada cliente
+(utilizando a função agregadora MIN e agrupando por customer_id) e depois selecionar todos o clientes que contrataram o plano 3 (Pro Annual)
+e suas respectivas data de inicio.
+Após coletar esses dados e fazendo um LEFT JOIN das duas tabelas, consigo identificar, utilizando a função DATE_DIFF,
+quantos dias cada cliente demorou para realizar a migração de plano e após isso, realizar a média de dias, utilizando a função agregadora AVG.
 
 10.  Analise a média detalhada de upgrade em períodos de 30 dias (Ex.: 0-30 dias, 31-60 dias etc)
 
@@ -222,7 +254,10 @@ from diferenca_dias
 group by 2
 order by avg_days_to_upgrade
 
-Explicação: 
+Explicação: Após utilizar praticamente o mesmo código da questão anterior, onde conseguimos identificar a quantidade de dias que cada
+cliente leva para migrar para o plano PRO ANNUAL, finalizamos a query com a função condicional CASE WHEN, que é utilizada para definir condições
+e regras específicas. Neste caso, utilizamos essa função para definir quando (WHEN) a diferença de dias (dif_dias_customer)
+fosse ≥ ou ≤ (maior ou igual/menor ou igual) então (THEN) ‘X dias para upgrade’.
 
 11.  Quantos assinantes fizeram downgrade do plano Pro Monthly para o Basic Monthly em 2020?
 
@@ -242,7 +277,10 @@ customers_basic_monthly as (
   on bm.customer_id = pm.customer_id
   where bm._start_date > pm._start_date
 
-Explicação: 
+Explicação: Consegui chegar no resultado abaixo após realizar um INNER JOIN de duas tabelas temporárias que foram criadas para selecionar
+todos os dados dos usuários do plano 2 (Pro Monthly) e do plano 1 (Basic Monthly). Com esse join, foi possível realizar um COUNT para
+contabilizar todos os usuários que tiveram a data início do plano 1 (bm) > (maior) que a data início do plano 2 (pm), ou seja, contrataram
+o Basic Monthly após o Pro Monthly, realizando assim um downgrade.
 
 
 
