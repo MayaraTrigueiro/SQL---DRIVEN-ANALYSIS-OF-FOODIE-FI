@@ -1,4 +1,4 @@
-# SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
+## SQL - ANÁLISE DA DINÂMICA DE ASSINATURA DO FOODIE-FI
 
 LINK PARA GOOGLE CONSOLE - BIGQUERY - PERGUNTAS E RESPOSTAS (SQL):
 - https://console.cloud.google.com/bigquery?sq=203346039404:ae4749ef417e454e8ff4a745f5698d65
@@ -6,7 +6,7 @@ LINK PARA GOOGLE CONSOLE - BIGQUERY - PERGUNTAS E RESPOSTAS (SQL):
 LINK PARA ANÁLISE COMPLETA: 
 - https://medium.com/@mayaratrigueiro4/case-análise-da-dinâmica-de-assinatura-do-foodie-fi-ee87f879555f
 
-**Introdução**
+**Introdução** 
 
 Análise de dados de uma empresa chamada Foodie-Fi que oferece serviços streaming de conteúdo de comida (Como se fosse uma Netflix, mas apenas com programas e conteúdos de comidas e cozinha). 
 A empresa foi fundada em 2020 e iremos utilizar os dados disponíveis para analisar aceitação do serviço entre os assinantes, quais foram os planos mais contratados, como foi a movimentação dos planos entre os clientes (churn, downgrades e upgrades), entre outros questionamentos que possa nos dar uma perspectiva do passado e presente visando decisões e recomendações mais assertivas para a empresa.
