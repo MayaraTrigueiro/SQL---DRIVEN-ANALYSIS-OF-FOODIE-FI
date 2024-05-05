@@ -19,7 +19,7 @@ Explicação: Nesta query foi utilizada a função agregadora COUNT e a função
 para saber a quantidade de plano trial 
 por mês. Ao agrupar a quantidade de novos clientes com o plano trial por mês, conseguimos chegar no resultado.
 
-3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name
+3. Quais eventos de data e planos ocorrem após 2020? Mostrar o detalhamento por contagem de eventos para cada plan_name
 
 WITH NOVOS_PLANOS AS (
   SELECT s.plan_id,
